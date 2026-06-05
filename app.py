@@ -338,58 +338,42 @@ with st.sidebar:
 
     st.markdown('<span class="badge badge-purple">Input</span>', unsafe_allow_html=True)
 
-input_type = st.radio(
-    "Input Type",
-    ["YouTube URL", "Upload File"]
-)
-
-source = None
-
-if input_type == "YouTube URL":
-    source = st.text_input(
-        "YouTube URL",
-        placeholder="https://youtube.com/watch?v=..."
+    input_type = st.radio(
+        "Input Type",
+        ["YouTube URL", "Upload File"]
     )
 
-else:
-    uploaded_file = st.file_uploader(
-        "Upload Audio / Video",
-        type=[
-            "mp4",
-            "mov",
-            "mkv",
-            "webm",
-            "mp3",
-            "wav",
-            "m4a"
-        ]
-    )
+    source = None
 
-    if uploaded_file is not None:
-        import os
-
-        os.makedirs("downloades", exist_ok=True)
-
-        source = os.path.join(
-            "downloades",
-            uploaded_file.name
+    if input_type == "YouTube URL":
+        source = st.text_input(
+            "YouTube URL",
+            placeholder="https://youtube.com/watch?v=..."
+        )
+    else:
+        uploaded_file = st.file_uploader(
+            "Upload Audio / Video",
+            type=["mp4", "mov", "mkv", "webm", "mp3", "wav", "m4a"]
         )
 
-        with open(source, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+        if uploaded_file is not None:
+            import os
+            os.makedirs("downloades", exist_ok=True)
+            source = os.path.join("downloades", uploaded_file.name)
+            with open(source, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            st.success(f"Uploaded: {uploaded_file.name}")
 
-        st.success(f"Uploaded: {uploaded_file.name}")
+    language = st.selectbox(
+        "Language",
+        ["english", "hinglish"],
+        index=0
+    )
 
-language = st.selectbox(
-    "Language",
-    ["english", "hinglish"],
-    index=0
-)
-
-run_btn = st.button(
-    "⚡ Analyse",
-    use_container_width=True
-)
+    run_btn = st.button(
+        "⚡ Analyse",
+        use_container_width=True
+    )
 
     if st.session_state.pipeline_done:
         st.markdown("---")
@@ -411,8 +395,8 @@ st.markdown("---")
 
 # ── Run Pipeline ────────────────────────────────────────────────────────────────
 if run_btn:
-    if not source.strip():
-        st.error("Please enter a YouTube URL or file path.")
+    if not source or not source.strip():
+        st.error("Please enter a YouTube URL or upload a file.")
     else:
         st.session_state.pipeline_done = False
         st.session_state.result = None
@@ -470,7 +454,7 @@ if run_btn:
             st.rerun()
 
         except Exception as e:
-            for k in ["audio","transcript","title","summary","extract","rag"]:
+            for k in ["audio", "transcript", "title", "summary", "extract", "rag"]:
                 if st.session_state.pipeline_steps.get(k) == "active":
                     st.session_state.pipeline_steps[k] = "pending"
             progress_placeholder.error(f"❌ Error: {e}")
@@ -559,7 +543,11 @@ if st.session_state.result:
     # Chat input
     chat_col1, chat_col2 = st.columns([5, 1], gap="small")
     with chat_col1:
-        user_input = st.text_input("Your question", placeholder="What were the main decisions made?", label_visibility="collapsed")
+        user_input = st.text_input(
+            "Your question",
+            placeholder="What were the main decisions made?",
+            label_visibility="collapsed"
+        )
     with chat_col2:
         send_btn = st.button("Send →", use_container_width=True)
 
@@ -584,7 +572,7 @@ else:
             Ready to Analyse
         </div>
         <div style="color:var(--text-muted);font-size:0.85rem;max-width:380px;line-height:1.7">
-            Paste a YouTube URL or local file path in the sidebar, choose your language, and hit <strong>Analyse</strong> to get started.
+            Paste a YouTube URL or upload a file in the sidebar, choose your language, and hit <strong>Analyse</strong> to get started.
         </div>
         <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;justify-content:center">
             <span class="badge badge-purple">Transcription</span>
